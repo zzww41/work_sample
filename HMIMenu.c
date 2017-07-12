@@ -1,257 +1,3 @@
-/*****************************************************************************
- *
- * File:	HMIMenu.c
- *
- * Author:	 Kris Li
- *
- * Copyright (C) Cooper Power Systems, Inc 2001, 2011
- *
- ******************************************************************************
- *
- * Design description:
- *This is a demo task, including HMI Menu structure.
- * 
- *
- ****************************************************************************/
-
-#include "HMIMenu.h"
-#include "HMIHandle.h"
-
-const char *SOENameList[][MAX_SOE_ITEM] = {
-{
-    "Super-\nvisory On",
-    "Super-\nvisory Off",
-    "Non-\nReclosing On",
-    "Non-\nReclosing Off",
-    "Cold\nLoad Pickup On",
-    "Cold\nLoad Pickup Off",
-    "Ground\nTrip On",
-    "Ground\nTrip Off", 
-    "Phase\nTrip On",
-    "Phase\nTrip Off",	
-    "SGF On",
-    "SGF Off",
-    "Reset\nCounter",  
-    "Profile\nSelection Change", //Profile Selection Change
-    "Set Time",
-    "TCPIP W/R \nFailure",
-	
-    "HLT On\nFrom Comm1",
-    "HLT Off\nFrom Comm1",
-	"HLT On\nFrom Comm2",
-	"HLT Off\nFrom Comm2",
-    "HLT On\nFrom Front Panel",
-    "HLT Off\nFrom Front Panel",
-    "HLT\nClose Attempts",
-    
-    "Seq\nCoor Opers",
-    "Phase\nLockout",
-    "Ground\nLockout",
-    "Phase\nHCL",
-    "Ground\nHCL",
-    "SGF\nLockout",
-    "Non-\nReclosing Lockout",
-    "Operati-\non 1 Phase Trip",
-    "Operati-\non 2 Phase Trip",
-    "Operati-\non 3 Phase Trip",
-    
-    "Operati-\non 4 Phase Trip",
-    "Operati-\non 1 Ground Trip",
-    "Operati-\non 2 Ground Trip",
-    "Operati-\non 3 Ground Trip",
-    "Operati-\non 4 Ground Trip",
-    "Control\nOK",
-    "Close\nFail",
-    "Trip\nFail",
-    "Trip\nFrom Front Panel",  // HMI Trip 
-    "Close\nFrom Front Panel", // HMI Close
-    "Trip\nFrom I/O",
-    "Close\nFrom I/O",
-    "Normal\nClose",
-    "Sequence\nReset",
-    "Frequen-\ncy Trip",
-    "Freq1 \nTrip",
-    "Freq2 \nTrip",
-    "Freq3 \nTrip",
-    "Freq4 \nTrip",
-    "Freq5 \nTrip",
-    "Freq6 \nTrip",
-    "Voltage \nTrip",
-    "Over \nVoltage 1 Trip",
-    "Over \nVoltage 2 Trip",
-    "Over \nVoltage 3 Trip",
-    "Under \nVoltage 1 Trip",
-    "Under \nVoltage 2 Trip",
-    "Under \nVoltage 3 Trip",
-    "Voltage-\nFreq Restoration",
-	
-    "Switch\nAbnormal", // Switch abnormal changes    
-    "Rel\nRetry",
-    "Rel\nRetry fail",
-    "Rel\nRetry Success",
-    "Ctrl Ci-\nrcuit Interrupt", // Control Circuit Interrupt 
-    "Trip\nCoil Fail",	
-    "State I-\nndeterminate O&C", //State Indeterminate Open and Closed
-    "Incons.\nState To Close", //Inconsistent State Check Close
-    "Incons.\nState To Lockout", //Inconsistent State Check Lockout
-	
-    "Operati-\non 1 Phase AMT",
-    "Operati-\non 2 Phase AMT",
-    "Operati-\non 3 Phase AMT",
-    "Operati-\non 4 Phase AMT",
-    "Operati-\non 1 Ground AMT",
-    "Operati-\non 2 Ground AMT",
-    "Operati-\non 3 Ground AMT",
-    "Operati-\non 4 Ground AMT",
-    "Operati-\non 1 SGF AMT",    
-    "Operati-\non 2 SGF AMT",
-    "Operati-\non 3 SGF AMT",
-    "Operati-\non 4 SGF AMT",  
-    
-    "AC Power\nLost",
-    "AC Power\nPresent", 
-    "Battery\nTest On", // Battery test on
-    "Battery\nTest Manually",
-    "Battery\nTest Auto",
-    "Battery\nLow Voltage",
-	"Battery\nReset",
-    "Battery\nFailed",
-    "Ext. Cl-\nose Req Comm1", //Ext.Close Request( Comm 1)
-    "Ext. Cl-\nose Req Comm2",//Ext.Close Request( Comm 2)
-    "Ext. Tr-\nip/Lockout Comm1", //Ext. Trip/Lockout( Comm 1)
-    "Ext. Tr-\nip/Lockout Comm2", //Ext. Trip/Lockout( Comm 2)
-   	"A-Ph Bus\nVol Pre",
-	"B-Ph Bus\nVol Pre",
-  	"C-Ph Bus\nVol Pre",
-  	"A-Ph Bus\nVol Dis",
-	"B-Ph Bus\nVol Dis",
-  	"C-Ph Bus\nVol Dis",
-
-	"Reset\nTarget"
-},
-{
-	"Æô¶¯Ô¶³Ì", // Supervisory on
-	"Æô¶¯¾ÍµØ", // Supervisory off
-	"ĞòÁĞĞ­µ÷Ê¹ÄÜ", // Seq Coord Enb
-	"ÖØºÏ³¢ÊÔÊ¹ÄÜ", // Rel Retry Enb
-	"½ûÖ¹ÖØºÏÊ¹ÄÜ", // NonReclosing On
-	"½ûÖ¹ÖØºÏ¹Ø±Õ", // NonReclosing Off
-	"Í¶ÈëÀäÆô¶¯", // CLPU on
-	"ÍË³öÀäÆô¶¯", // CLPU off
-	
-	"Í¶ÈëËÙ¶Ï", // Fast Trip on
-	"ÍË³öËÙ¶Ï", // Fast Trip off
-	"Í¶ÈëÏŞÊ±ËÙ¶Ï", // delay fast Trip on
-	"ÍË³öÏŞÊ±ËÙ¶Ï", // delay fast Trip off
-	"Í¶Èë¹ıÁ÷±£»¤", // overcurrent trip on
-	"ÍË³ö¹ıÁ÷±£»¤", // overcurrent trip off
-	"Í¶ÈëÀäËÙ¶Ï", // Fast Trip on
-	"ÍË³öÀäËÙ¶Ï", // Fast Trip off
-	"Í¶ÀäÏŞÊ±ËÙ¶Ï", // delay fast Trip on
-	"ÍËÀäÏŞÊ±ËÙ¶Ï", // delay fast Trip off
-	"Í¶Àä¹ıÁ÷±£»¤", // overcurrent trip on
-	"ÍËÀä¹ıÁ÷±£»¤", // overcurrent trip off
-	"Í¶ÈëÖØºÏÕ¢", // reclose on
-	"ÍË³öÖØºÏÕ¢", // reclose off
-	"Í¶ÈëÀäÖØºÏÕ¢", //CLPU reclose on
-	"ÍË³öÀäÖØºÏÕ¢", // CLPU reclose off
-	"Í¶Èëºó¼ÓËÙ", // after fast on
-	"ÍË³öºó¼ÓËÙ", // after fast off
-	"Í¶ÈëÁãĞò±£»¤", // SGF on
-	"ÍË³öÁãĞò±£»¤", // SGF off
-	
-	"¸´¹é", // Target Reset
-	"Çå³ı±¨¾¯",
-	"ÖØÉè¼ÆÊıÆ÷", // Target Reset
-	"Æô¶¯µç³Ø¹ÜÀí",
-	"¹Ø±Õµç³Ø¹ÜÀí",
-	
-	"Ô¶³Ì½ûÖ¹ºÏÕ¢Ê¹ÄÜ", // Comm HLT on
-	"Ô¶³Ì½ûÖ¹ºÏÕ¢¹Ø±Õ", // Comm HLT off
-	"Æô¶¯HLT", // HMI HLT on
-	"¹Ø±ÕHLT", // HMI HLT off
-	"³¢ÊÔ½ûÖ¹ºÏÕ¢",  // HLT Close Attempt
-		
-	"ĞòÁĞĞ­µ÷Ö´ĞĞ", // Seq Coord Opers
-	"ÖØºÏ³¢ÊÔ±ÕËø", // Rel Retry Lckout
-	"¹ıÁ÷¹ÊÕÏ±ÕËø", // OC lckout
-	"ÏŞÊ±ËÙ¶Ï±ÕËø", // Delay trip Lckout
-	"ËÙ¶Ï±ÕËø",     // fast trip lockout
-	"½ÓµØ¹ÊÕÏ±ÕËø", // SGF lckout
-
-	"Ò»´Î¹ıÁ÷·ÖÕ¢", // Oper1 Phase Trip
-	"¶ş´Î¹ıÁ÷·ÖÕ¢", // Oper2 Phase Trip
-	"Èı´Î¹ıÁ÷·ÖÕ¢", // Oper3 Phase Trip
-	"ËÄ´Î¹ıÁ÷·ÖÕ¢", // Oper4 Phase Trip
-	"Ò»´ÎÏŞËÙ·ÖÕ¢", // Oper1 Gnd Trip
-	"¶ş´ÎÏŞËÙ·ÖÕ¢", // Oper2 Gnd Trip
-	"Èı´ÎÏŞËÙ·ÖÕ¢", // Oper3 Gnd Trip
-	"ËÄ´ÎÏŞËÙ·ÖÕ¢", // Oper4 Gnd Trip
-	"Ò»´ÎËÙ¶Ï·ÖÕ¢", // Oper1 Gnd Trip
-	"¶ş´ÎËÙ¶Ï·ÖÕ¢", // Oper2 Gnd Trip
-	"Èı´ÎËÙ¶Ï·ÖÕ¢", // Oper3 Gnd Trip
-	"ËÄ´ÎËÙ¶Ï·ÖÕ¢", // Oper4 Gnd Trip
-	"Ò»´Î½ÓµØ·ÖÕ¢", // Oper1 Gnd Trip
-	"¶ş´Î½ÓµØ·ÖÕ¢", // Oper2 Gnd Trip
-	"Èı´Î½ÓµØ·ÖÕ¢", // Oper3 Gnd Trip
-	"ËÄ´Î½ÓµØ·ÖÕ¢", // Oper4 Gnd Trip
-	
-	"¿ØÖÆ»Ö¸´Õı³£", // Control Ok
-	"ºÏÕ¢Ê§°Ü", // Close fail
-	"·ÖÕ¢Ê§°Ü", // Trip fail
-	"¿ØÖÆ·ÖÕ¢", // Control/HMI Trip
-	"¿ØÖÆºÏÕ¢", // Control/HMI Close
-	"Ò£¿ØÆ÷·ÖÕ¢", // Supervisory Trip
-	"Ò£¿ØÆ÷ºÏÕ¢", // Supervisory Close
-	"Õı³£ºÏÕ¢", // Normal Close
-	"ĞòÁĞ¸´Î»", // sequence reset
-	"ÁãĞòµçÁ÷±¨¾¯",//SGF alarm
-
-	
-	"ÖØºÏÆ÷Òì³£", // switch abnormal changes	
-	"ÖØºÏ³¢ÊÔ", //Rel Retry
-	"ÖØºÏ³¢ÊÔÊ§°Ü", // Rel Retry fail
-	"ÖØºÏ³¢ÊÔ³É¹¦", // Rel Retry Succ
-	"¿ØÖÆµçÂ·ÖĞ¶Ï", // CCI:Ctrl Cir Int
-	"·ÖÕ¢ÏßÈ¦Ê§°Ü", // Trip Coil fail
-	
-	"µÚÒ»´Î¹ıÁ÷ÖØºÏ³¢ÊÔ", // Oper1 OC AMT
-	"µÚ¶ş´Î¹ıÁ÷ÖØºÏ³¢ÊÔ", // Oper2 OC AMT
-	"µÚÈı´Î¹ıÁ÷ÖØºÏ³¢ÊÔ", // Oper3 OC AMT
-	"µÚËÄ´Î¹ıÁ÷ÖØºÏ³¢ÊÔ", // Oper4 OC AMT
-	"µÚÒ»´ÎÏŞÊ±ËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Delay Trip AMT
-	"µÚ¶ş´ÎÏŞÊ±ËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Delay Trip AMT
-	"µÚÈı´ÎÏŞÊ±ËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Delay Trip AMT
-	"µÚËÄ´ÎÏŞÊ±ËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Delay Trip AMT
-	"µÚÒ»´ÎËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Fast Trip AMT
-	"µÚ¶ş´ÎËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Fast Trip AMT
-	"µÚÈı´ÎËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Fast Trip AMT
-	"µÚËÄ´ÎËÙ¶ÏÖØºÏ³¢ÊÔ", // Oper1 Fast Trip AMT
-	
-	"µÚÒ»´Î½ÓµØÖØºÏ³¢ÊÔ", // Oper1 SGF AMT
-	"µÚ¶ş´Î½ÓµØÖØºÏ³¢ÊÔ", // Oper2 SGF AMT
-	"µÚÈı´Î½ÓµØÖØºÏ³¢ÊÔ", // Oper3 SGF AMT
-	"µÚËÄ´Î½ÓµØÖØºÏ³¢ÊÔ", // Oper4 SGF AMT
-	
-	"½»Á÷µçÊ§µç", // AC Power lost
-	"½»Á÷µç»Ö¸´", // AC Power restore
-
-     "µç³Ø²âÊÔ´ò¿ª",//    BATTERY_TEST_ON,/* Battery test */
-     "ÊÖ¶¯²âÊÔµç³Ø",//   BATTERY_MANUL_TEST,
-     "×Ô¶¯²âÊÔµç³Ø",//   BATTERY_AUTO_TEST, // Test mode updated, default is auto
-     "µç³ØµçÑ¹¹ıµÍ",//   BATTERY_VOL_LOW,
-     "ÖØÖÃµç³Ø",//   BATTERY_RESET,
-     "µç³ØÒì³£",//   BATTERY_FAIL_REPLACE,
-	
-	"°´¼ü·ÖÕ¢", // Trip from Comm
-	"°´¼üºÏÕ¢", // Close from Comm
-	"I/O ·ÖÕ¢", // Trip from IO
-	"I/O ºÏÕ¢", // Trip from IO
-	"A ÏàµçÑ¹´æÔÚ", // A-Ph Bus Vol Pre
-	"B ÏàµçÑ¹´æÔÚ", // B-Ph Bus Vol Pre
-	"C ÏàµçÑ¹´æÔÚ", // C-Ph Bus Vol Pre
-}
-};								 
 
 const char *language_list[][MAX_MENU_ITEM] = 
 {
@@ -911,112 +657,112 @@ const char *language_list[][MAX_MENU_ITEM] =
 	},
 
 	{ 
-		"ÖĞÎÄ", //language_name
+		"ä¸­æ–‡", //language_name
 		
 		// MainMenu
-		"²ÎÊıÉèÖÃ",   // 1
-		"ÊµÊ±¼à²â",  // 2
-		"ÊÂ¼ş¼ÇÂ¼",  // 3
-		"×´Ì¬±¨¾¯",  // 4
-		"¶¯×÷¼ÆÊı", //5
-		"×´Ì¬Õï¶Ï", // 6
-		"µç³Ø¹ÜÀí", // 7
-		"°²È«¹ÜÀí", //  8
-		"°æ±¾ĞÅÏ¢", // 9
+		"å‚æ•°è®¾ç½®",   // 1
+		"å®æ—¶ç›‘æµ‹",  // 2
+		"äº‹ä»¶è®°å½•",  // 3
+		"çŠ¶æ€æŠ¥è­¦",  // 4
+		"åŠ¨ä½œè®¡æ•°", //5
+		"çŠ¶æ€è¯Šæ–­", // 6
+		"ç”µæ± ç®¡ç†", // 7
+		"å®‰å…¨ç®¡ç†", //  8
+		"ç‰ˆæœ¬ä¿¡æ¯", // 9
 		
 
 		//alarm menu
-		"ÄÚ´æÊ§°Ü.......%d", //  1
-		"ÉÁ´æÊ§°Ü.......%d", //  2	
-		"ºÏÕ¢¹ÊÕÏ.......%d", // 3
-		"·ÖÕ¢¹ÊÕÏ.......%d", //  4		
-		"ÁãĞò¹ÊÕÏ.......%d", //  5
-		"ÖØÉè±¨¾¯", // 6
-		"±¨¾¯×´Ì¬", // 7
-		"ÖØÉè±¨¾¯×´Ì¬", // 8
-		"µç³Ø±¨¾¯.......%d",  //9
-		"ÊÙÃü±¨¾¯.......%d", // 10
-		"µçÔ´±¨¾¯.......%d", // 11
+		"å†…å­˜å¤±è´¥.......%d", //  1
+		"é—ªå­˜å¤±è´¥.......%d", //  2	
+		"åˆé—¸æ•…éšœ.......%d", // 3
+		"åˆ†é—¸æ•…éšœ.......%d", //  4		
+		"é›¶åºæ•…éšœ.......%d", //  5
+		"é‡è®¾æŠ¥è­¦", // 6
+		"æŠ¥è­¦çŠ¶æ€", // 7
+		"é‡è®¾æŠ¥è­¦çŠ¶æ€", // 8
+		"ç”µæ± æŠ¥è­¦.......%d",  //9
+		"å¯¿å‘½æŠ¥è­¦.......%d", // 10
+		"ç”µæºæŠ¥è­¦.......%d", // 11
 
 		//counter menu
-		"·ÖÕ¢×ÜÊı", // 1
-		"ÖØÉè·ÖÕ¢Êı", // 2
-		"ÖØÉè·ÖÕ¢¼ÆÊı", // 3
+		"åˆ†é—¸æ€»æ•°", // 1
+		"é‡è®¾åˆ†é—¸æ•°", // 2
+		"é‡è®¾åˆ†é—¸è®¡æ•°", // 3
 		
-		"ÃüÁî·ÖÕ¢: %d", // 4
-		"±£»¤·ÖÕ¢: %d", // 5
-		"ÉèÖÃ·ÖÕ¢Êı", // 6
+		"å‘½ä»¤åˆ†é—¸: %d", // 4
+		"ä¿æŠ¤åˆ†é—¸: %d", // 5
+		"è®¾ç½®åˆ†é—¸æ•°", // 6
 
 
 		//battery menu
-		"µçÑ¹:", // 1
-		"µçÁ÷:", // 2
-		"µç³Ø²âÊÔ", // 3
-		"°´ÏÂÈ·ÈÏ½øÈë²âÊÔ",   // 4
-		" ²âÊÔÖĞ...",         // 5
-		"µçÑ¹:", // 6
-		"µçÁ÷:", // 7
-		"µç³ØÉèÖÃ", // 8
+		"ç”µå‹:", // 1
+		"ç”µæµ:", // 2
+		"ç”µæ± æµ‹è¯•", // 3
+		"æŒ‰ä¸‹ç¡®è®¤è¿›å…¥æµ‹è¯•",   // 4
+		" æµ‹è¯•ä¸­...",         // 5
+		"ç”µå‹:", // 6
+		"ç”µæµ:", // 7
+		"ç”µæ± è®¾ç½®", // 8
 		
 
 		//clock menu
-		"Ê±ÖÓ", // 1
-		"UTC Ê±Çø", // 2
-		"ÓïÑÔÑ¡Ôñ", // 3
-		"ÈÕÆÚ¸ñÊ½", // 4
-		"Ê±¼ä¸ñÊ½", // 5
-		"12Ğ¡Ê±", // 6
-		"24Ğ¡Ê±", // 7
-		"ÔÂ£­ÈÕ£­Äê", // 8
-		"Äê£­ÔÂ£­ÈÕ", // 9
+		"æ—¶é’Ÿ", // 1
+		"UTC æ—¶åŒº", // 2
+		"è¯­è¨€é€‰æ‹©", // 3
+		"æ—¥æœŸæ ¼å¼", // 4
+		"æ—¶é—´æ ¼å¼", // 5
+		"12å°æ—¶", // 6
+		"24å°æ—¶", // 7
+		"æœˆï¼æ—¥ï¼å¹´", // 8
+		"å¹´ï¼æœˆï¼æ—¥", // 9
 
 		//nameplate menu
-		"Èí¼ş°æ±¾", // 1
-		"Ó²¼ş°æ±¾", // 2
-		"Òıµ¼³ÌĞò°æ±¾", // 3
+		"è½¯ä»¶ç‰ˆæœ¬", // 1
+		"ç¡¬ä»¶ç‰ˆæœ¬", // 2
+		"å¼•å¯¼ç¨‹åºç‰ˆæœ¬", // 3
 
 
 		//metering menu
-		"ÊµÊ±²âÁ¿", // 1
-		"ÊµÊ±¹¦ÂÊ", // 2
-		"ÓĞ¹¦¹¦ÂÊ", // 3
-		"ÎŞ¹¦¹¦ÂÊ", // 4
-		"ÊÓÔÚ¹¦ÂÊ", // 5
-		"¹¦ÂÊÒòÊı", // 6
-		"µç¶È²âÁ¿", // 7
-		"ÓĞ¹¦µç¶È", // 8
-		"ÎŞ¹¦µç¶È", // 9
-		"µç¶ÈÇåÁã", // 10
-		"ÆµÂÊ",      // 11
+		"å®æ—¶æµ‹é‡", // 1
+		"å®æ—¶åŠŸç‡", // 2
+		"æœ‰åŠŸåŠŸç‡", // 3
+		"æ— åŠŸåŠŸç‡", // 4
+		"è§†åœ¨åŠŸç‡", // 5
+		"åŠŸç‡å› æ•°", // 6
+		"ç”µåº¦æµ‹é‡", // 7
+		"æœ‰åŠŸç”µåº¦", // 8
+		"æ— åŠŸç”µåº¦", // 9
+		"ç”µåº¦æ¸…é›¶", // 10
+		"é¢‘ç‡",      // 11
 
 		//record menu
-		"<Ã»ÓĞ¼ÇÂ¼>", // 1
+		"<æ²¡æœ‰è®°å½•>", // 1
 
 
 		//active menu		
-		"¶¨Öµ×éÑ¡Ôñ", // 1
-		"¶¨Öµ×é±à¼­", // 2
-		"¶¨Öµ×é 1", // 3
-		"¶¨Öµ×é 2",  // 4
-		"¶¨Öµ×é 3",  // 5
-		"¶¨Öµ×é 4",  // 6
+		"å®šå€¼ç»„é€‰æ‹©", // 1
+		"å®šå€¼ç»„ç¼–è¾‘", // 2
+		"å®šå€¼ç»„ 1", // 3
+		"å®šå€¼ç»„ 2",  // 4
+		"å®šå€¼ç»„ 3",  // 5
+		"å®šå€¼ç»„ 4",  // 6
 
 
 		
 
 		//overcurrent menu
-		"¶¨Öµ±£»¤", // 1
-		"ËÙ¶ÏÍ¶ÇĞ",   // 2
-		"ËÙ¶ÏÕû¶¨Öµ",   // 3
-		"ÏŞÊ±ËÙ¶ÏÍ¶ÇĞ",   // 4
-		"ÏŞÊ±ËÙ¶ÏÕû¶¨Öµ",   // 5
-		"ÏŞÊ±ËÙ¶ÏÑÓÊ±",   // 6
-		"¹ıÁ÷Í¶ÇĞ",   // 7
-		"¹ıÁ÷Õû¶¨Öµ",   // 8
-		"¹ıÁ÷ÑÓÊ±",   // 9
-		"ËÙ¶Ï±£»¤", // 10
-		"ÏŞÊ±ËÙ¶Ï±£»¤", // 11
-		"¹ıÁ÷±£»¤", // 12
+		"å®šå€¼ä¿æŠ¤", // 1
+		"é€Ÿæ–­æŠ•åˆ‡",   // 2
+		"é€Ÿæ–­æ•´å®šå€¼",   // 3
+		"é™æ—¶é€Ÿæ–­æŠ•åˆ‡",   // 4
+		"é™æ—¶é€Ÿæ–­æ•´å®šå€¼",   // 5
+		"é™æ—¶é€Ÿæ–­å»¶æ—¶",   // 6
+		"è¿‡æµæŠ•åˆ‡",   // 7
+		"è¿‡æµæ•´å®šå€¼",   // 8
+		"è¿‡æµå»¶æ—¶",   // 9
+		"é€Ÿæ–­ä¿æŠ¤", // 10
+		"é™æ—¶é€Ÿæ–­ä¿æŠ¤", // 11
+		"è¿‡æµä¿æŠ¤", // 12
 		
 
 
@@ -1024,38 +770,38 @@ const char *language_list[][MAX_MENU_ITEM] =
 		
 
 		//SGF menu
-		"ÁãĞò±£»¤", // 1
-		"ÁãĞòÍ¶ÇĞ", // 2
-		"ÁãĞòÕû¶¨Öµ", // 3
-		"ÁãĞòÑÓÊ±", // 4
-		"ÁãĞò±£»¤·½Ê½", // 5
-		"±¨¾¯", // 6
-		"·ÖÕ¢", // 7
+		"é›¶åºä¿æŠ¤", // 1
+		"é›¶åºæŠ•åˆ‡", // 2
+		"é›¶åºæ•´å®šå€¼", // 3
+		"é›¶åºå»¶æ—¶", // 4
+		"é›¶åºä¿æŠ¤æ–¹å¼", // 5
+		"æŠ¥è­¦", // 6
+		"åˆ†é—¸", // 7
 
 
 		//reclose menu
-		"ÖØºÏÕ¢", // 1
-		"ÖØºÏ´ÎÊı",  // 2
-		"µÚÒ»´ÎÖØºÏ¼ä¸ô",  // 3
-		"µÚ¶ş´ÎÖØºÏ¼ä¸ô",  // 4
-		"µÚÈı´ÎÖØºÏ¼ä¸ô",  // 5
-		"ÖØºÏÍ¶ÇĞ", // 6
-		"ºó¼ÓËÙÍ¶ÇĞ", // 7
+		"é‡åˆé—¸", // 1
+		"é‡åˆæ¬¡æ•°",  // 2
+		"ç¬¬ä¸€æ¬¡é‡åˆé—´éš”",  // 3
+		"ç¬¬äºŒæ¬¡é‡åˆé—´éš”",  // 4
+		"ç¬¬ä¸‰æ¬¡é‡åˆé—´éš”",  // 5
+		"é‡åˆæŠ•åˆ‡", // 6
+		"ååŠ é€ŸæŠ•åˆ‡", // 7
 
 				
 		//HLT menu
-		"½ûÖ¹ºÏÕ¢", // 1
-		"½ûÖ¹ºÏÕ¢ÉèÖÃ", // 2
-		"½ûÖ¹ºÏÕ¢ÑÓÊ±", // 3
+		"ç¦æ­¢åˆé—¸", // 1
+		"ç¦æ­¢åˆé—¸è®¾ç½®", // 2
+		"ç¦æ­¢åˆé—¸å»¶æ—¶", // 3
 
 		//system menu
-		"ÏµÍ³ÅäÖÃ", // 1
-		"²ÎÊıÅäÖÃ",// 2
-		"Ê±ÖÓ¹ÜÀí",// 3
-		"ÆµÂÊ", // 4	
-		"CT±ä±È", // 5		
-		"PT±ä±È", // 6
-		"ĞéÄâÏàÎ»", // 7
+		"ç³»ç»Ÿé…ç½®", // 1
+		"å‚æ•°é…ç½®",// 2
+		"æ—¶é’Ÿç®¡ç†",// 3
+		"é¢‘ç‡", // 4	
+		"CTå˜æ¯”", // 5		
+		"PTå˜æ¯”", // 6
+		"è™šæ‹Ÿç›¸ä½", // 7
 		"50Hz", // 8
 		"60Hz", // 9
 		"300/5", //10
@@ -1063,130 +809,130 @@ const char *language_list[][MAX_MENU_ITEM] =
 		"1000/1", // 12
 			
 		//clpu menu
-		"ÀäÆô¶¯", // 1
-		"ÀäÆô¶¯Í¶ÇĞ",// 2			
-		"¶¨Öµ±£»¤",// 3
-		"ÖØºÏ´ÎÊı", // 4
-		"ÖØºÏ¼ä¸ô", // 5
-		"ÓĞĞ§Ê±¼ä", // 6
+		"å†·å¯åŠ¨", // 1
+		"å†·å¯åŠ¨æŠ•åˆ‡",// 2			
+		"å®šå€¼ä¿æŠ¤",// 3
+		"é‡åˆæ¬¡æ•°", // 4
+		"é‡åˆé—´éš”", // 5
+		"æœ‰æ•ˆæ—¶é—´", // 6
 		
-		"ËÙ¶ÏÍ¶ÇĞ",   // 7
-		"ËÙ¶ÏÕû¶¨Öµ",   // 8
-		"ÏŞÊ±ËÙ¶ÏÍ¶ÇĞ",   // 9
-		"ÏŞÊ±ËÙ¶ÏÕû¶¨Öµ",   // 10
-		"ÏŞÊ±ËÙ¶ÏÑÓÊ±",   // 11
-		"¹ıÁ÷Í¶ÇĞ",   // 12
-		"¹ıÁ÷Õû¶¨Öµ",   // 13
-		"¹ıÁ÷ÑÓÊ±",   // 14	
-		"ËÙ¶Ï±£»¤", // 15
-		"ÏŞÊ±ËÙ¶Ï±£»¤", // 16
-		"¹ıÁ÷±£»¤", // 17
-		"ºó¼ÓËÙ", // 18
-		"ºó¼ÓËÙÍ¶ÇĞ", // 19
-		"ÖØºÏÍ¶ÇĞ",   // 20
+		"é€Ÿæ–­æŠ•åˆ‡",   // 7
+		"é€Ÿæ–­æ•´å®šå€¼",   // 8
+		"é™æ—¶é€Ÿæ–­æŠ•åˆ‡",   // 9
+		"é™æ—¶é€Ÿæ–­æ•´å®šå€¼",   // 10
+		"é™æ—¶é€Ÿæ–­å»¶æ—¶",   // 11
+		"è¿‡æµæŠ•åˆ‡",   // 12
+		"è¿‡æµæ•´å®šå€¼",   // 13
+		"è¿‡æµå»¶æ—¶",   // 14	
+		"é€Ÿæ–­ä¿æŠ¤", // 15
+		"é™æ—¶é€Ÿæ–­ä¿æŠ¤", // 16
+		"è¿‡æµä¿æŠ¤", // 17
+		"ååŠ é€Ÿ", // 18
+		"ååŠ é€ŸæŠ•åˆ‡", // 19
+		"é‡åˆæŠ•åˆ‡",   // 20
 		
 		//security menu		
-		"ÇëÊäÈëÃÜÂë",// 1
-		"Í¨¹ıÈÏÖ¤",// 2
-		"ÃÜÂë´íÎó",// 3
-		"   <²é¿´: ·µ»Ø>",  // 4
-		"< Ã»ÓĞÈ¨ÏŞ >", // 5
-		"±£´æÈ·ÈÏ", // 6
-		"< È·ÈÏ >: ±£´æ", // 7
-		"< ·µ»Ø >: ÍË³ö", // 8
-		"<   \x1a  >: È¡Ïû", // 9
-		"°²È«ÈÏÖ¤", // 10
-		"ÃÜÂë²é¿´", // 11
-		"ÃÜÂëĞŞ¸Ä", // 12
-		"ÇëÊäÈëĞÂÃÜÂë", // 13
-		"ÇëÔÙ´ÎÊäÈëĞÂÃÜÂë", // 14
-		"²Ëµ¥ÃÜÂë", // 15
-		"ÃÜÂë²»Ò»ÖÂ", // 16
-		"ÃÜÂë³¤¶È²»·û", // 17
+		"è¯·è¾“å…¥å¯†ç ",// 1
+		"é€šè¿‡è®¤è¯",// 2
+		"å¯†ç é”™è¯¯",// 3
+		"   <æŸ¥çœ‹: è¿”å›>",  // 4
+		"< æ²¡æœ‰æƒé™ >", // 5
+		"ä¿å­˜ç¡®è®¤", // 6
+		"< ç¡®è®¤ >: ä¿å­˜", // 7
+		"< è¿”å› >: é€€å‡º", // 8
+		"<   \x1a  >: å–æ¶ˆ", // 9
+		"å®‰å…¨è®¤è¯", // 10
+		"å¯†ç æŸ¥çœ‹", // 11
+		"å¯†ç ä¿®æ”¹", // 12
+		"è¯·è¾“å…¥æ–°å¯†ç ", // 13
+		"è¯·å†æ¬¡è¾“å…¥æ–°å¯†ç ", // 14
+		"èœå•å¯†ç ", // 15
+		"å¯†ç ä¸ä¸€è‡´", // 16
+		"å¯†ç é•¿åº¦ä¸ç¬¦", // 17
 		
 
 		//diagnostic menu
-		"Ö¸Ê¾µÆ²âÊÔ", // 1
-		" ²âÊÔÖĞ...", // 2
-		"Òº¾§ÆÁ²âÊÔ", // 3
+		"æŒ‡ç¤ºç¯æµ‹è¯•", // 1
+		" æµ‹è¯•ä¸­...", // 2
+		"æ¶²æ™¶å±æµ‹è¯•", // 3
 
 		//confirm menu
-		"< È·ÈÏ >: ÊÇ",  // 1
-		"< ·µ»Ø >: ·ñ",  // 2
-		"È·ÈÏ·ÖÕ¢?",  // 3
-		"È·ÈÏºÏÕ¢?", // 4
-		"È·ÈÏ¸Ä±äHLT?", // 5
-		"È·ÈÏÉèÖÃ?",  // 6
-		"È·ÈÏÆô¶¯Ô¶³Ì?", // 7
-		"È·ÈÏÆô¶¯¾ÍµØ?", // 8
+		"< ç¡®è®¤ >: æ˜¯",  // 1
+		"< è¿”å› >: å¦",  // 2
+		"ç¡®è®¤åˆ†é—¸?",  // 3
+		"ç¡®è®¤åˆé—¸?", // 4
+		"ç¡®è®¤æ”¹å˜HLT?", // 5
+		"ç¡®è®¤è®¾ç½®?",  // 6
+		"ç¡®è®¤å¯åŠ¨è¿œç¨‹?", // 7
+		"ç¡®è®¤å¯åŠ¨å°±åœ°?", // 8
 		
 		//resettime menu
-		"¸´Î»Ê±¼ä", // 1
+		"å¤ä½æ—¶é—´", // 1
 				
 		//special	 menu	
 		"", // 1
-		"< ÎŞĞ§ >", // 2
-		"< ³É¹¦ >", // 3
-		"< Ê§°Ü >",// 4
-		"ÍË³ö", // 5
-		"Í¶Èë", // 6
-		"ÊÇ", // 7
-		"·ñ", // 8
-		"×Ô¶¯", // 9
-		"ÊÖ¶¯", // 10
-		"  < ¸ü¶à"" \x18""\x19"" >", // 11
-		"¿ª", // 12
-		"¹Ø", // 13
-		"< ±à¼­ >",  // 14
-		"< È·ÈÏ >",  // 15
-		"< ·µ»Ø >",  // 16
-		"  < ¸ü¶à"" \x19"" >", // 17
-		"  < ¸ü¶à"" \x18"" >", // 18
-		"< ¸ü¶à"" \x18""\x19"" >", // 19
-		"< È·ÈÏ >  ÊÇ", // 20
-		"< ·µ»Ø >  ·ñ", // 21
+		"< æ— æ•ˆ >", // 2
+		"< æˆåŠŸ >", // 3
+		"< å¤±è´¥ >",// 4
+		"é€€å‡º", // 5
+		"æŠ•å…¥", // 6
+		"æ˜¯", // 7
+		"å¦", // 8
+		"è‡ªåŠ¨", // 9
+		"æ‰‹åŠ¨", // 10
+		"  < æ›´å¤š"" \x18""\x19"" >", // 11
+		"å¼€", // 12
+		"å…³", // 13
+		"< ç¼–è¾‘ >",  // 14
+		"< ç¡®è®¤ >",  // 15
+		"< è¿”å› >",  // 16
+		"  < æ›´å¤š"" \x19"" >", // 17
+		"  < æ›´å¤š"" \x18"" >", // 18
+		"< æ›´å¤š"" \x18""\x19"" >", // 19
+		"< ç¡®è®¤ >  æ˜¯", // 20
+		"< è¿”å› >  å¦", // 21
 
 		
-		//Ğ£×¼
+		//æ ¡å‡†
 #ifdef _CALIBRATION_		
-		"Ğ£×¼",  // 1
-		"¼à²â",  // 2
-		"¸üĞÂ",  // 3
-		"µçÑ¹Ğ£×¼",  // 4
-		"µçÁ÷Ğ£×¼",  // 5
-		"µç³ØĞ£×¼",  // 6
-		"µµÎ»ÉèÖÃ",  // 7
-		"A ÏàĞ£×¼",  // 8
-		"B ÏàĞ£×¼",  // 9
-		"C ÏàĞ£×¼",  // 10
-		"G ÏàĞ£×¼",  // 11
-		"È«²¿Ğ£×¼",      // 12
-		"µç³ØµçÑ¹Ğ£×¼",      // 13
-		"µç³ØµçÁ÷Ğ£×¼",      // 14
-		"µçÁ÷²âÁ¿",       // 15
-		"µçÑ¹²âÁ¿",       // 16
-		"µç³Ø²âÁ¿",       // 17
+		"æ ¡å‡†",  // 1
+		"ç›‘æµ‹",  // 2
+		"æ›´æ–°",  // 3
+		"ç”µå‹æ ¡å‡†",  // 4
+		"ç”µæµæ ¡å‡†",  // 5
+		"ç”µæ± æ ¡å‡†",  // 6
+		"æ¡£ä½è®¾ç½®",  // 7
+		"A ç›¸æ ¡å‡†",  // 8
+		"B ç›¸æ ¡å‡†",  // 9
+		"C ç›¸æ ¡å‡†",  // 10
+		"G ç›¸æ ¡å‡†",  // 11
+		"å…¨éƒ¨æ ¡å‡†",      // 12
+		"ç”µæ± ç”µå‹æ ¡å‡†",      // 13
+		"ç”µæ± ç”µæµæ ¡å‡†",      // 14
+		"ç”µæµæµ‹é‡",       // 15
+		"ç”µå‹æµ‹é‡",       // 16
+		"ç”µæ± æµ‹é‡",       // 17
 		
-		"¸üĞÂÉèÖÃ²ÎÊı",   // 18
-		"¸üĞÂĞ£×¼²ÎÊı",      // 19
-		"Ğ£×¼Ê¹ÄÜ",       // 20
-		"µµÎ»01",        // 21 //0.5
-	    "µµÎ»02",        // 22 //5
-		"Ğ£×¼µã01",      // 23
-		"Ğ£×¼µã02",      
-		"Ğ£×¼µã03",      
-		"Ğ£×¼µã04",      
-		"Ğ£×¼µã05",      
-		"Ğ£×¼µã06",      
-		"Ğ£×¼µã07",      
-		"Ğ£×¼µã08",      
-		"Ğ£×¼µã09",      
-		"Ğ£×¼µã10",      
-		"Ğ£×¼µã11",      
-		"Ğ£×¼µã12",      
-		"Ğ£×¼µã13",      
-		"Ğ£×¼µã14",      
-		"Ğ£×¼µã15",      
+		"æ›´æ–°è®¾ç½®å‚æ•°",   // 18
+		"æ›´æ–°æ ¡å‡†å‚æ•°",      // 19
+		"æ ¡å‡†ä½¿èƒ½",       // 20
+		"æ¡£ä½01",        // 21 //0.5
+	    "æ¡£ä½02",        // 22 //5
+		"æ ¡å‡†ç‚¹01",      // 23
+		"æ ¡å‡†ç‚¹02",      
+		"æ ¡å‡†ç‚¹03",      
+		"æ ¡å‡†ç‚¹04",      
+		"æ ¡å‡†ç‚¹05",      
+		"æ ¡å‡†ç‚¹06",      
+		"æ ¡å‡†ç‚¹07",      
+		"æ ¡å‡†ç‚¹08",      
+		"æ ¡å‡†ç‚¹09",      
+		"æ ¡å‡†ç‚¹10",      
+		"æ ¡å‡†ç‚¹11",      
+		"æ ¡å‡†ç‚¹12",      
+		"æ ¡å‡†ç‚¹13",      
+		"æ ¡å‡†ç‚¹14",      
+		"æ ¡å‡†ç‚¹15",      
 #endif
 
 		
@@ -1848,508 +1594,5 @@ const MenuItem_t metering_menu[] =
 {(MenuItem_t *)main_menu,MENU_ENERGY_INDEX+10,TitleLine1,NULL,NULL,0,(MenuItem_t *)Freq_metering_menu},
 MENU_END
 };
-////////////////////alarm log&status//////////////////////
-const MenuItem_t reset_alarm_menu[] =
-{
-{(MenuItem_t *)alarm_menu,71,TitleLine4,"",HMI_ResetAlarm_Func,0,NULL},//leaf
-MENU_END
-};
-const MenuItem_t alarm_status_menu[] =
-{
-{(MenuItem_t *)alarm_menu,15,TitleLine4,"",HMI_Show_Alarm_Func,0,NULL},//leaf
-MENU_END
-};
-const MenuItem_t alarm_menu[] =
-{
-{(MenuItem_t *)main_menu,70,TitleLine1,NULL,NULL,0,(MenuItem_t *)alarm_status_menu},
-{(MenuItem_t *)main_menu,69,TitleLine1,NULL,NULL,0,(MenuItem_t *)reset_alarm_menu},
-MENU_END
-};
 
-
-const MenuItem_t target_menu[]=
-{
-//{(MenuItem_t *)main_menu,Reset_Target_After_Rec_TM,TitleLine2,NULL,NULL,0,(MenuItem_t *)reset_target_after_rec_tm_menu},
-{(MenuItem_t *)main_menu,Reset_Target,TitleLine1,NULL,NULL,0,(MenuItem_t *)reset_target_menu},
-MENU_END
-};
-
-const MenuItem_t reset_target_menu[]=
-{
-{(MenuItem_t *)target_menu,Reset_Target,TitleLine4,"",HMI_ResetTarget_Func,0,NULL},//leaf
-MENU_END
-};
-
-////////////////////counter//////////////////////
-const MenuItem_t trip_cntr_menu[] =
-{
-{(MenuItem_t *)counter_menu,15,TitleLine4,"",HMI_Show_Counter_Func,0,NULL},//leaf
-MENU_END
-};
-
-const MenuItem_t reset_trip_cntr_menu[] =
-{
-{(MenuItem_t *)counter_menu,34,TitleLine4,"",HMI_ResetCounter_Func,0,NULL},//leaf
-MENU_END
-};
-
-const MenuItem_t set_trip_cntr_menu[] =
-{
-{(MenuItem_t *)counter_menu,34,TitleLine4,"",HMI_SetCounterDeadband_Func,0,NULL},//leaf
-MENU_END
-};
-
-const MenuItem_t counter_menu[] =
-{
-{(MenuItem_t *)main_menu,35,TitleLine1,NULL,NULL,0,(MenuItem_t *)trip_cntr_menu},
-{(MenuItem_t *)main_menu,82,TitleLine1,NULL,NULL,0,(MenuItem_t *)reset_trip_cntr_menu},
-{(MenuItem_t *)main_menu,MENU_ENERGY_INDEX+11,TitleLine1,NULL,NULL,0,(MenuItem_t *)set_trip_cntr_menu},
-
-MENU_END
-};
-////////////////////battery//////////////////////
-const MenuItem_t battery_menu[] =
-{
-{(MenuItem_t *)main_menu,15,TitleLine4,"",HMI_Battery_Func,0,NULL},//leaf
-MENU_END
-};
-
-////////////////////clock//////////////////////
-const MenuItem_t clock_menu[] =
-{
-{(MenuItem_t *)main_menu,41,TitleLine4,"",HMI_Clock_Func,0,NULL},//leaf
-{(MenuItem_t *)main_menu,42,TitleLine4,"",HMI_TimeZone_Func,0,NULL},//leaf
-{(MenuItem_t *)main_menu,44,TitleLine4,"",HMI_DateFormat_Func,0,NULL},//leaf
-{(MenuItem_t *)main_menu,45,TitleLine4,"",HMI_TimeFormat_Func,0,NULL},//leaf
-MENU_END
-};
-
-////////////////////namepalte data//////////////////////
-const MenuItem_t nameplate_menu[] =
-{
-{(MenuItem_t *)main_menu,46,TitleLine4,"%d.%02d",HMI_Show_Ver_Func,0,NULL},//leaf
-{(MenuItem_t *)main_menu,49,TitleLine4,"%d.%02d",HMI_Show_Ver_Func,1,NULL},//leaf
-{(MenuItem_t *)main_menu,48,TitleLine4,"%d.%02d",HMI_Show_Ver_Func,2,NULL},//leaf
-{(MenuItem_t *)main_menu,51,TitleLine4,"%d.%02d",HMI_Show_Ver_Func,3,NULL},//leaf
-MENU_END
-};
-
-////////////////////system config//////////////////////
-const MenuItem_t sys_config_menu[] =
-{
-{(MenuItem_t *)modview_Setting,91,TitleLine4,"",HMI_StrPara_Func,OFFSET(active_profile.ppSysConfig.Frequency)|((MENU_ENERGY_INDEX+7)<<16),NULL},//leaf
-{(MenuItem_t *)modview_Setting,167,TitleLine4,"%.2f",HMI_FloatPara_Func,OFFSET(active_profile.ppSysConfig.CTRatio),NULL},//leaf
-{(MenuItem_t *)modview_Setting,205,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.ppSysConfig.PTConn[0]),NULL},//leaf
-{(MenuItem_t *)modview_Setting,206,TitleLine4,"%.2f",HMI_FloatPara_Func,OFFSET(active_profile.ppSysConfig.PTRatio[0]),NULL},//leaf
-{(MenuItem_t *)modview_Setting,207,TitleLine4,"Enable Disabled",HMI_StrPara_Func,OFFSET(active_profile.ppSysConfig.PhomPh)|(194<<16),NULL},//leaf
-{(MenuItem_t *)modview_Setting,208,TitleLine4,"%d",HMI_StrPara_Func,OFFSET(active_profile.ppSysConfig.DeltaPots)|(217<<16),NULL},//leaf
-{(MenuItem_t *)modview_Setting,322,TitleLine4,"",HMI_StrPara_Func,OFFSET(active_profile.ppSysConfig.BushingRotation)|(324<<16),NULL},
-{(MenuItem_t *)modview_Setting,323,TitleLine4,"3",HMI_MultStrPara_Func,OFFSET(active_profile.ppSysConfig.ChannalChoose)|(326<<16)|(1ul<<31),NULL},
-MENU_END
-};
-
-const MenuItem_t lamptest_menu[]=
-{
-{(MenuItem_t *)diagnostics_menu,15,TitleLine4,"",HMI_LampTest_Func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t lcdtest_menu[]=
-{
-{(MenuItem_t *)diagnostics_menu,15,TitleLine4,"",HMI_LcdTest_Func,0,NULL},
-MENU_END
-};
-
-
-const MenuItem_t diagnostics_menu[]=
-{
-{(MenuItem_t *)main_menu,309,TitleLine1,NULL,NULL,0,(MenuItem_t *)lamptest_menu},
-{(MenuItem_t *)main_menu,MENU_ENERGY_INDEX+9,TitleLine1,NULL,NULL,0,(MenuItem_t *)lcdtest_menu},
-MENU_END
-};
-
-////////////////////communication///////////////////
-const MenuItem_t commnication_menu[]=
-{
-//{(MenuItem_t *)modview_Setting,COMM_PORT1,TitleLine1,NULL,NULL,0,(MenuItem_t *)COMPort1_menu},
-//{(MenuItem_t *)modview_Setting,COMM_PORT2,TitleLine1,NULL,NULL,0,(MenuItem_t *)COMPort2_menu},
-#if IEC104_COM
-{(MenuItem_t *)modview_Setting,NETWORK_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_network_menu},
-{(MenuItem_t *)modview_Setting,IEC_104_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_iec_104_menu},
-#endif
-#if IEC_COM
-{(MenuItem_t *)modview_Setting,COMM_PORT1,TitleLine1,NULL,NULL,0,(MenuItem_t *)COMPort1_menu},
-
-#endif
-MENU_END
-};
-
-const MenuItem_t COMPort1_menu[]=
-{
-#if IEC_COM
-{(MenuItem_t *)commnication_menu,COMM_PORT2_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_config_menu},
-{(MenuItem_t *)commnication_menu,DNP3_SERIAL_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_dnp_Serial_menu},
-//{(MenuItem_t *)commnication_menu,DNP3_NETWORK_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_dnp_network_menu},
-{(MenuItem_t *)commnication_menu,IEC_101_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port1_iec_101_menu},
-#endif
-MENU_END
-};
-/*
-const MenuItem_t COMPort2_menu[]=
-{
-{(MenuItem_t *)commnication_menu,COMM_PORT2_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_config_menu},
-//{(MenuItem_t *)commnication_menu,NETWORK_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_network_menu},
-{(MenuItem_t *)commnication_menu,DNP3_SERIAL_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_dnp_Serial_menu},
-//{(MenuItem_t *)commnication_menu,DNP3_NETWORK_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_dnp_network_menu},
-{(MenuItem_t *)commnication_menu,IEC_101_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_iec_101_menu},
-//{(MenuItem_t *)commnication_menu,IEC_104_CONFIG,TitleLine1,NULL,NULL,0,(MenuItem_t *)port2_iec_104_menu},
-MENU_END
-};
-*/
-
-//**********************************port1*****************************************************************/
-
-const MenuItem_t port1_config_menu[]=
-{
-{(MenuItem_t *)COMPort1_menu,COMM_PORT_ASSIGN,    TitleLine4,"2",HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig.portConfig.comAssignment)|(PORT_ASSIGN_SERIAL<<16),NULL},
-{(MenuItem_t *)COMPort1_menu,COMM_PROTOCOL_ASSIGN,TitleLine4,"3",HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig.portConfig.protocolAssignment)|(PROTOCOL_ASSIGN_DNP3<<16)|(1ul<<31),NULL},
-MENU_END
-};
-
-
-
-const MenuItem_t port1_network_menu[]=
-{
-{(MenuItem_t *)commnication_menu,NW_IP_ADDR,    TitleLine4,"IPConfig",IPconfig_handle,OFFSET(active_profile.communicationConfig.networkConfig.ipAddress),NULL},
-{(MenuItem_t *)commnication_menu,NW_SUBNET_MASK,TitleLine4,"IPConfig",IPconfig_handle,OFFSET(active_profile.communicationConfig.networkConfig.subNetMask),NULL},
-{(MenuItem_t *)commnication_menu,NW_GATEWAY,    TitleLine4,"IPConfig",IPconfig_handle,OFFSET(active_profile.communicationConfig.networkConfig.gateWay),NULL},
-{(MenuItem_t *)commnication_menu,NW_MAC_ADDR,   TitleLine4,"",show_MAC_Addr,1ul<<31,NULL},
-MENU_END
-};
-
-
-
-const MenuItem_t port1_dnp_Serial_menu[]=
-{
-{(MenuItem_t *)COMPort1_menu,DNP3S_RBE_MASTER,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.dnpSerialConfig.dnpRBEMaster),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3S_IDE_SLAVE, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.dnpSerialConfig.dnpIEDSlave),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3S_BAUD_RATE, TitleLine4,"6", HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig.dnpSerialConfig.dnpBaudrate)|(COM_B2400<<16)|(1ul<<31),NULL},
-MENU_END
-};
-
-
-/*
-const MenuItem_t port1_dnp_network_menu[]=
-{
-{(MenuItem_t *)COMPort1_menu,DNP3N_PROTOCOL_PORT_TYPE,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpPortType),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_ACCEPT_F_ANY_IP,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpAcceptFromAnyIPEnb),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_ACCEPT_F_IP_ADDR,  TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpAcceptFromIP),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_DEST_PORT_MUM,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpDestPortNum),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_LISTEN_PORT_NUM,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpListingPortNum),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_USE_PORT_REQ,      TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpUsePortFromReq),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_KEEP_ALIVE_TIMEOUT,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpKeepAliveTimeout),NULL},
-{(MenuItem_t *)COMPort1_menu,DNP3N_KEEP_ALIVE_RETRIY, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].dnpNetworkConfig.dnpKeepAliveRetries)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-
-
-
-const MenuItem_t port1_iec_101_menu[]=
-{
-{(MenuItem_t *)COMPort1_menu,IEC101_LINK_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.linkAddr),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_COMM_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.CommonAddr),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_LINK_ADDR_SIZE,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.linkAddrSize),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_COMM_ADDR_SIZE,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.commonAddrSize),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_OBJ_ADDR_SIZE,      TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.objectAddrSize),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_CAUSE_TRANS_SIZE,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.causeofTransmitSize),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_SINGLE_CMD_OP_MODE, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.singeCommandOpMode),NULL},
-{(MenuItem_t *)COMPort1_menu,IEC101_SELECT_BF_EXEC_TIME,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec101Config.selectTimeout)|(1ul<<31),NULL},
-MENU_END
-};
-
-
-const MenuItem_t port1_iec_104_menu[]=
-{
-{(MenuItem_t *)commnication_menu,IEC104_SERVER_LISTEN_PORT, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.serverListingPort),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_COMM_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.CommonAddr),NULL},
-//{(MenuItem_t *)COMPort1_menu,IEC104_SINGLE_CMD_OP_TIME, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[0].iec104Config.singeCommandOpMode),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_SELECT_BF_EXEC_TIME,TitleLine4,"%d ms",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.selectTimeout),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_RESPONSE_TIMEOUT,   TitleLine4,"%d s",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.responseTimeout),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_ACK_NO_DATA,        TitleLine4,"%d s",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.ackNoDataTimeout),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_IDLE_TEST,          TitleLine4,"%d s",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.idleTestTime),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_MAX_TRANS,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.maxTransmit),NULL},
-{(MenuItem_t *)commnication_menu,IEC104_MAX_RECEIVE,        TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig.iec104Config.maxReceive)|(1ul<<31),NULL},
-MENU_END
-};
-
-//**********************************port2*****************************************************************/
-/*
-const MenuItem_t port2_config_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,COMM_PORT_ASSIGN,    TitleLine4,"2",HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig[1].portConfig.comAssignment)|(PORT_ASSIGN_SERIAL<<16),NULL},
-{(MenuItem_t *)COMPort2_menu,COMM_PROTOCOL_ASSIGN,TitleLine4,"2",HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig[1].portConfig.protocolAssignment)|(PROTOCOL_ASSIGN_DNP3<<16)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-/*
-const MenuItem_t port2_network_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,NW_IP_ADDR,    TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].networkConfig.ipAddress),NULL},
-{(MenuItem_t *)COMPort2_menu,NW_SUBNET_MASK,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].networkConfig.subNetMask),NULL},
-{(MenuItem_t *)COMPort2_menu,NW_GATEWAY,    TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].networkConfig.gateWay),NULL},
-{(MenuItem_t *)COMPort2_menu,NW_MAC_ADDR,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].networkConfig.MacAddress)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-/*
-const MenuItem_t port2_dnp_Serial_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,DNP3S_RBE_MASTER,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpSerialConfig.dnpRBEMaster),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3S_IDE_SLAVE, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpSerialConfig.dnpIEDSlave),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3S_BAUD_RATE, TitleLine4,"6", HMI_MultStrPara_Func,OFFSET(active_profile.communicationConfig[1].dnpSerialConfig.dnpBaudrate)|(COM_B2400<<16)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-/*
-const MenuItem_t port2_dnp_network_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,DNP3N_PROTOCOL_PORT_TYPE,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpPortType),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_ACCEPT_F_ANY_IP,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpAcceptFromAnyIPEnb),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_ACCEPT_F_IP_ADDR,  TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpAcceptFromIP),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_DEST_PORT_MUM,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpDestPortNum),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_LISTEN_PORT_NUM,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpListingPortNum),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_USE_PORT_REQ,      TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpUsePortFromReq),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_KEEP_ALIVE_TIMEOUT,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpKeepAliveTimeout),NULL},
-{(MenuItem_t *)COMPort2_menu,DNP3N_KEEP_ALIVE_RETRIY, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].dnpNetworkConfig.dnpKeepAliveRetries)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-/*
-const MenuItem_t port2_iec_101_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,IEC101_LINK_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.linkAddr),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_COMM_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.CommonAddr),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_LINK_ADDR_SIZE,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.linkAddrSize),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_COMM_ADDR_SIZE,     TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.commonAddrSize),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_OBJ_ADDR_SIZE,      TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.objectAddrSize),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_CAUSE_TRANS_SIZE,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.causeofTransmitSize),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_SINGLE_CMD_OP_MODE, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.singeCommandOpMode),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC101_SELECT_BF_EXEC_TIME,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec101Config.selectTimeout)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-/*
-const MenuItem_t port2_iec_104_menu[]=
-{
-{(MenuItem_t *)COMPort2_menu,IEC104_SERVER_LISTEN_PORT, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.serverListingPort),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_COMM_ADDR,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.CommonAddr),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_SINGLE_CMD_OP_TIME, TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.singeCommandOpMode),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_SELECT_BF_EXEC_TIME,TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.selectTimeout),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_RESPONSE_TIMEOUT,   TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.responseTimeout),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_ACK_NO_DATA,        TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.ackNoDataTimeout),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_IDLE_TEST,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.idleTestTime),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_MAX_TRANS,          TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.maxTransmit),NULL},
-{(MenuItem_t *)COMPort2_menu,IEC104_MAX_RECEIVE,        TitleLine4,"%d",HMI_IntPara_Func,OFFSET(active_profile.communicationConfig[1].iec104Config.maxReceive)|(1ul<<31),NULL},
-MENU_END
-};
-*/
-
-/////////////////////////Calibration menu//////////////////////////////////////////////
-
-#if _CALIBRATION_
-
-const MenuItem_t vol_gear_set_menu[] = 
-{
-{(MenuItem_t *)voltage_cal_menu,314,TitleLine1,"%d",gear_set_func,OFFSET(CaliData.CaliGear),NULL},
-MENU_END
-};
-
-const MenuItem_t vol_phaseA_cal_menu[] = 
-{
-{(MenuItem_t *)voltage_cal_menu,15,TitleLine1,"%.1f V",voltage_cal_func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t vol_phaseB_cal_menu[] = 
-{
-{(MenuItem_t *)voltage_cal_menu,15,TitleLine1,"%.1f V",voltage_cal_func,1,NULL},
-MENU_END
-};
-
-const MenuItem_t vol_phaseC_cal_menu[] = 
-{
-{(MenuItem_t *)voltage_cal_menu,15,TitleLine1,"%.1f V",voltage_cal_func,2,NULL},
-MENU_END
-};
-
-const MenuItem_t vol_Allphase_cal_menu[] = 
-{
-{(MenuItem_t *)voltage_cal_menu,15,TitleLine1,"%.1f V",voltage_cal_func,3,NULL},
-MENU_END
-};
-
-
-const MenuItem_t voltage_cal_menu[] = 
-{
-{(MenuItem_t *)calibration_menu,314,TitleLine1,NULL,NULL,0,(MenuItem_t *)vol_gear_set_menu},
-{(MenuItem_t *)calibration_menu,315,TitleLine1,NULL,NULL,0,(MenuItem_t *)vol_phaseA_cal_menu},
-{(MenuItem_t *)calibration_menu,316,TitleLine1,NULL,NULL,0,(MenuItem_t *)vol_phaseB_cal_menu},
-{(MenuItem_t *)calibration_menu,317,TitleLine1,NULL,NULL,0,(MenuItem_t *)vol_phaseC_cal_menu},
-{(MenuItem_t *)calibration_menu,319,TitleLine1,NULL,NULL,0,(MenuItem_t *)vol_Allphase_cal_menu},
-MENU_END
-};
-
-
-const MenuItem_t cur_gear_set_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,314,TitleLine1,"%d",gear_set_func,OFFSET(CaliData.CaliGear),NULL},
-MENU_END
-};
-
-const MenuItem_t cur_phaseA_cal_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,15,TitleLine1,"%.2f A",current_cal_func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t cur_phaseB_cal_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,15,TitleLine1,"%.2f A",current_cal_func,1,NULL},
-MENU_END
-};
-
-const MenuItem_t cur_phaseC_cal_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,15,TitleLine1,"%.2f A",current_cal_func,2,NULL},
-MENU_END
-};
-
-const MenuItem_t cur_phaseG_cal_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,15,TitleLine1,"%.2f A",current_cal_func,3,NULL},
-MENU_END
-};
-
-const MenuItem_t cur_Allphase_cal_menu[] = 
-{
-{(MenuItem_t *)current_cal_menu,15,TitleLine1,"%.2f A",current_cal_func,4,NULL},
-MENU_END
-};
-
-const MenuItem_t current_cal_menu[] = 
-{
-{(MenuItem_t *)calibration_menu,314,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_gear_set_menu},
-{(MenuItem_t *)calibration_menu,315,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_phaseA_cal_menu},
-{(MenuItem_t *)calibration_menu,316,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_phaseB_cal_menu},
-{(MenuItem_t *)calibration_menu,317,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_phaseC_cal_menu},
-{(MenuItem_t *)calibration_menu,318,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_phaseG_cal_menu},
-{(MenuItem_t *)calibration_menu,319,TitleLine1,NULL,NULL,0,(MenuItem_t *)cur_Allphase_cal_menu},
-MENU_END
-};
-
-const MenuItem_t bat_vol_cal_menu[] = 
-{
-{(MenuItem_t *)battery_cal_menu,15,TitleLine1,"%.1f V",battery_cal_func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t bat_cur_cal_menu[] = 
-{
-{(MenuItem_t *)battery_cal_menu,15,TitleLine1,"%.2f A",battery_cal_func,1,NULL},
-MENU_END
-};
-
-const MenuItem_t battery_cal_menu[] = 
-{
-{(MenuItem_t *)calibration_menu,320,TitleLine1,NULL,NULL,0,(MenuItem_t *)bat_vol_cal_menu},
-{(MenuItem_t *)calibration_menu,321,TitleLine1,NULL,NULL,0,(MenuItem_t *)bat_cur_cal_menu},
-MENU_END
-};
-
-const MenuItem_t voltage_metering_menu[] = 
-{
-{(MenuItem_t *)cal_metering_menu,15,TitleLine1,"%.1f",show_cal_metering,0,NULL},
-MENU_END
-};
-
-const MenuItem_t current_metering_menu[] = 
-{
-{(MenuItem_t *)cal_metering_menu,15,TitleLine1,"%.1f",show_cal_metering,1,NULL},
-MENU_END
-};
-
-const MenuItem_t battery_metering_menu[] = 
-{
-{(MenuItem_t *)cal_metering_menu,15,TitleLine1,"%.1f",show_cal_metering,2,NULL},
-MENU_END
-};
-
-const MenuItem_t cali_en_menu[] = 
-{
-{(MenuItem_t *)cal_metering_menu,328,TitleLine1," ",cali_en_func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t metering_gear_set_menu[] = 
-{
-{(MenuItem_t *)cal_metering_menu,314,TitleLine1,"%d",gear_set_func,OFFSET(CaliData.CaliGear),NULL},
-MENU_END
-};
-
-
-const MenuItem_t calibration_menu[] = 
-{
-{(MenuItem_t *)main_cal_menu,311,TitleLine1,NULL,NULL,0,(MenuItem_t *)voltage_cal_menu},
-{(MenuItem_t *)main_cal_menu,312,TitleLine1,NULL,NULL,0,(MenuItem_t *)current_cal_menu},
-{(MenuItem_t *)main_cal_menu,313,TitleLine1,NULL,NULL,0,(MenuItem_t *)battery_cal_menu},
-MENU_END
-};
-
-const MenuItem_t cal_metering_menu[] = 
-{
-{(MenuItem_t *)main_cal_menu,323,TitleLine1,NULL,NULL,0,(MenuItem_t *)voltage_metering_menu},
-{(MenuItem_t *)main_cal_menu,322,TitleLine1,NULL,NULL,0,(MenuItem_t *)current_metering_menu},
-{(MenuItem_t *)main_cal_menu,324,TitleLine1,NULL,NULL,0,(MenuItem_t *)battery_metering_menu},
-{(MenuItem_t *)main_cal_menu,328,TitleLine1,NULL,NULL,0,(MenuItem_t *)cali_en_menu},
-{(MenuItem_t *)main_cal_menu,314,TitleLine1,NULL,NULL,0,(MenuItem_t *)metering_gear_set_menu},
-MENU_END
-};
-
-const MenuItem_t update_setting_menu[] = 
-{
-{(MenuItem_t *)update_menu,326,TitleLine1," ",update_setting_func,0,NULL},
-MENU_END
-};
-
-const MenuItem_t update_cali_menu[] = 
-{
-{(MenuItem_t *)update_menu,327,TitleLine1," ",update_setting_func,1,NULL},
-MENU_END
-};
-
-
-const MenuItem_t update_menu[] = 
-{
-{(MenuItem_t *)main_cal_menu,326,TitleLine1," ",NULL,0,(MenuItem_t *)update_setting_menu},
-{(MenuItem_t *)main_cal_menu,327,TitleLine1," ",NULL,1,(MenuItem_t *)update_cali_menu},
-MENU_END
-};
-
-const MenuItem_t keytest_menu[] = 
-{
-{(MenuItem_t *)main_cal_menu,365,TitleLine1," ",key_test_func,1,NULL},
-MENU_END
-};
-
-const MenuItem_t main_cal_menu[] = 
-{
-{NULL,310,TitleLine1,NULL,NULL,0,(MenuItem_t *)calibration_menu},
-{NULL,2,TitleLine1,NULL,NULL,0,(MenuItem_t *)cal_metering_menu},
-{NULL,325,TitleLine1,NULL,NULL,0,(MenuItem_t *)update_menu},
-{NULL,364,TitleLine1,NULL,NULL,0,(MenuItem_t *)keytest_menu},
-MENU_END
-};
-
-#endif
 
